@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>RAHMAN EXPERT — Text to Video</title>
+  <style>
+    :root{--bg:#05060a;--accent:#7c5cff;--muted:#9aa4b2;--glass:rgba(255,255,255,0.05)}
+    *{box-sizing:border-box;font-family:'Poppins',sans-serif;color:#e6eef8}
+    body{margin:0;background:linear-gradient(180deg,#05060a 0%,#0b0f14 100%);display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px}
+    .container{width:100%;max-width:600px;background:rgba(255,255,255,0.04);padding:30px;border-radius:20px;box-shadow:0 0 20px rgba(0,0,0,0.5)}
+    h1{text-align:center;color:#fff;font-size:26px;margin-bottom:6px}
+    p{text-align:center;color:var(--muted);margin-bottom:24px}
+    textarea{width:100%;padding:12px;border:none;border-radius:12px;background:var(--glass);resize:none;min-height:100px;font-size:15px}
+    button{width:100%;margin-top:14px;padding:12px;border:none;border-radius:12px;background:linear-gradient(90deg,var(--accent),#4fd1c5);font-weight:600;color:#000;cursor:pointer;font-size:16px}
+    .output{margin-top:20px;text-align:center}
+    video{width:100%;border-radius:10px;margin-top:12px}
+  </style>
+</head>
+<body>
+  <div id="auth-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#000d18;display:flex;justify-content:center;align-items:center;z-index:9999;">
+    <div style="background:rgba(255,255,255,0.05);padding:30px;border-radius:20px;width:90%;max-width:350px;text-align:center;backdrop-filter:blur(8px);box-shadow:0 0 25px rgba(0,255,255,0.3);">
+      <h2 style="margin-bottom:15px;color:#4fd1c5;font-size:24px;font-weight:700;letter-spacing:1px;">ACCESS REQUIRED</h2>
+      <input id="passInput" type="password" placeholder="Enter Password" style="width:100%;padding:12px;border:none;border-radius:12px;background:rgba(255,255,255,0.08);color:#fff;text-align:center;font-size:16px;outline:none;">
+      <button onclick="checkPass()" style="width:100%;margin-top:15px;padding:12px;border:none;border-radius:12px;background:linear-gradient(90deg,#00eaff,#4fd1c5);font-weight:700;color:#000;cursor:pointer;font-size:16px;">ENTER</button>
+      <p id="passError" style="color:#ff4d4d;margin-top:10px;display:none;">Wrong Password</p>
+    </div>
+  </div>
+  <script>
+    function checkPass(){
+      const p = document.getElementById('passInput').value;
+      if(p === 'Noor1'){
+        document.getElementById('auth-screen').style.display = 'none';
+      } else {
+        document.getElementById('passError').style.display = 'block';
+      }
+    }
+  </script>
+  <div class="container">
+    <h1>RAHMAN EXPERT</h1>
+    <p>Text to Video — Write your prompt below and click Send Prompt</p>
+
+    <textarea id="prompt">A futuristic car driving through neon-lit city streets at night.</textarea>
+    <button id="sendBtn">Send Prompt</button>
+
+    <div class="output" id="output"></div>
+  </div>
+
+  <script>
+    const endpoint = '/api/proxy';
+    const btn = document.getElementById('sendBtn');
+    const promptInput = document.getElementById('prompt');
+    const output = document.getElementById('output');
+
+    btn.addEventListener('click', async ()=>{
+      const prompt = promptInput.value.trim();
+      output.innerHTML = '<p>Generating video... please wait ⏳</p>';
+      try{
+        const res = await fetch(endpoint, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({prompt})
+        });
+        const data = await res.json();
+        console.log(data);
+
+        if(data.video_url || data.url){
+          const videoSrc = data.video_url || data.url;
+          output.innerHTML = `<video controls autoplay src="${videoSrc}"></video>`;
+        } else {
+          output.innerHTML = `<p>Response: ${JSON.stringify(data)}</p>`;
+        }
+      }catch(err){
+        output.innerHTML = `<p style='color:red'>Error: ${err.message}</p>`;
+      }
+    });
+  </script>
+</body>
+</html>
